@@ -1,7 +1,5 @@
 # gvclf_vd
 
-**Change hyperparameters in [best_hyperparams.py](https://github.com/nguyenvuthientrang/gvclf_vd/blob/main/best_hyperparams.py)**
-
 #### To run ALV on split-mnist, enter the following command:
 
 ```
