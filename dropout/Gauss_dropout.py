@@ -72,7 +72,6 @@ class GaussDropout(nn.Module):
         alpha = (2 * log_alpha).exp()         # self.log_alpha was clipped to ensure less equal than zero   
         negative_kl = log_alpha + c1*alpha + c2*alpha**2 + c3*alpha**3          
         kl = -negative_kl
-
         
         return kl.sum()   
  

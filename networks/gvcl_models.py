@@ -28,7 +28,10 @@ class MLPFilmVD:
     class Net(MultiHeadFiLMCNNVD):
         def __init__(self, inputsize,taskcla):
             heads = [t[1] for t in taskcla]
-            super().__init__((1,28,28), [], [400,400], heads, [28*28, 400], film_type = 'point')
+            if not args.single_head:
+                super().__init__((1,28,28), [], [400,400], heads, [28*28, 400], film_type = 'point')
+            else:
+                super().__init__((1,28,28), [], [400,400], heads, [28*28, 400, 400], film_type = 'point')
         
         def forward_linear(self, x, task_labels, num_samples=1, tasks = None):
             for i, layer in enumerate(self.fc_layers):
@@ -37,6 +40,8 @@ class MLPFilmVD:
                 if args.film:
                     x = self.fc_film_layers[i](x, task_labels, num_samples)
                 x = F.relu(x)
+            if args.single_head:
+                x = self.fc_dropout_layers[-1](x, task_labels, num_samples)
             return x
 
         def forward_conv(self, x, task_labels, num_samples=1, tasks = None):

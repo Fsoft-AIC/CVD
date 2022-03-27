@@ -1,0 +1,2 @@
+film,KL_weight,init_dr,beta,lamb,avg_acc,file_name
+1,1.0,0.5,0.2,100.0,0.9734667,split_mnist_gvclf_vd_0_KLcoeff_1_N_KLweight_1.0_samples_1_conv_Dropout_False_droptype_Gauss_dr_0.5_lr_-1_film_1_batch_256_epoch_1_singlehead_0_prior_var_-1

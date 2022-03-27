@@ -46,6 +46,7 @@ class Appr(object):
         return torch.optim.Adam(parameters, lr = self.lr)
 
     def train(self,t,xtrain,ytrain,xvalid,yvalid):
+
         self.valid = True
         lr=self.lr
 
@@ -64,6 +65,7 @@ class Appr(object):
             #update posterior to prior for everything except the first task
             self.model.add_task_body_params([t-1])
 
+
         #making sure every dataset has the same # of gradient passes irrespective of dataset size
         if t == 0:
             self.first_train_size = len(xtrain)
@@ -77,7 +79,7 @@ class Appr(object):
             num_epochs_to_train = int(round(self.nepochs * self.first_train_size/len(xtrain)))
 
         print('training for {} epochs'.format(num_epochs_to_train))
-
+        
         # Loop epochs
         for e in range(num_epochs_to_train):
             # Train
@@ -88,7 +90,6 @@ class Appr(object):
             clock2=time.time()
             print('| Epoch {:3d}, time={:5.1f}ms| Train: class_loss={:.3f}  kl_loss={:.3f}  total_loss={:.3f}, acc={:5.1f}% |'.format(
                 e+1,1000*self.sbatch*(clock1-clock0)/xtrain.size(0),class_loss, kl_loss, total_loss,100*train_acc))
-
         return
 
     def train_epoch(self,t,x,y):

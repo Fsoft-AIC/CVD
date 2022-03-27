@@ -35,7 +35,7 @@ elif args.drop_type == 'AddNoise':
     from dropout.AddNoise import LinearAddNoise 
 
 class MultiHeadFiLMCNN(nn.Module):
-    def __init__(self, input_shape, conv_sizes, fc_sizes, output_dims, film_type = 'point', global_avg_pool = False, prior_var = 1, init_vars = []):
+    def __init__(self, input_shape, conv_sizes, fc_sizes, output_dims, film_type = 'point', global_avg_pool = False, prior_var = -1, init_vars = []):
         super(MultiHeadFiLMCNN, self).__init__()
         self.conv_layers = nn.ModuleList([])
         self.fc_layers = nn.ModuleList([])
@@ -43,7 +43,7 @@ class MultiHeadFiLMCNN(nn.Module):
         self.num_tasks = len(output_dims)
         self.output_dims = output_dims
         self.single_head = args.single_head
-        self.prior_var = prior_var
+        self.prior_var = args.prior_var
         self.global_avg_pool = global_avg_pool
         self.pool_indices = []        
         
@@ -55,7 +55,7 @@ class MultiHeadFiLMCNN(nn.Module):
             self.fc_film_layers = nn.ModuleList([self.fc_film_gen_type(self.num_tasks, fc_size) for fc_size in fc_sizes])
 
 
-        self.prior_var = prior_var
+        self.prior_var = args.prior_var
 
         if len(init_vars) == 0:
             init_vars = -7 * np.ones([len(conv_sizes) + len(fc_sizes) + 1])
@@ -203,7 +203,7 @@ class MultiHeadFiLMCNN(nn.Module):
                 self.heads[t].add_new_task(reset_variance = False)
 
 class MultiHeadFiLMCNNVD(MultiHeadFiLMCNN):
-    def __init__(self, input_shape, conv_sizes, fc_sizes, output_dims, drop_fc_sizes, film_type = 'point', global_avg_pool = False, prior_var = 1, init_vars = []):
+    def __init__(self, input_shape, conv_sizes, fc_sizes, output_dims, drop_fc_sizes, film_type = 'point', global_avg_pool = False, prior_var = -1, init_vars = []):
         super().__init__(input_shape, conv_sizes, fc_sizes, output_dims, film_type, global_avg_pool, prior_var, init_vars)
 
         self.set_dropout_gen_type()
@@ -284,7 +284,7 @@ class PointFiLMLayer(nn.Module):
 class MFConvLayer(torch.nn.modules.conv._ConvNd):
     def __init__(self, in_channels, out_channels, kernel_size, stride=1,
                  padding=0, dilation=1, groups=1,
-                 bias=True, padding_mode='zeros', prior_var = 1, init_var = -7):
+                 bias=True, padding_mode='zeros', prior_var = 1, init_var = -7, ratio=0.5):
         kernel_size = _pair(kernel_size)
         stride = _pair(stride)
         padding = _pair(padding)
@@ -295,13 +295,33 @@ class MFConvLayer(torch.nn.modules.conv._ConvNd):
         
         self.init_var = init_var
         
+        
         self.W_prior_mean = torch.zeros(self.weight.shape, device = device)
         self.b_prior_mean = torch.zeros(self.bias.shape, device = device)
-        
-        self.prior_var = prior_var
-        self.W_prior_var = torch.ones(self.weight.shape, device = device).mul(np.log(self.prior_var))
-        self.b_prior_var = torch.ones(self.bias.shape, device = device).mul(np.log(self.prior_var))
 
+
+        if prior_var == -1:
+            _, fan_out = _calculate_fan_in_and_fan_out(self.weight)
+            gain = 1 # Var[w] + sigma^2 = 2/fan_in
+            
+            total_var = 2 / fan_out
+            noise_var = total_var * ratio
+            mu_var = total_var - noise_var
+            
+            noise_std, mu_std = math.sqrt(noise_var), math.sqrt(mu_var)
+            bound = math.sqrt(3.0) * mu_std
+            rho_init = np.log(np.exp(noise_std)-1)
+            bias_rho_init = np.log(np.exp(1) - 1)
+
+            self.w_var_init = np.log1p(np.exp(rho_init))**2
+            self.b_var_init = np.log1p(np.exp(bias_rho_init))**2
+        else :
+            self.w_var_init = prior_var
+            self.b_var_init = prior_var
+
+        
+        self.W_prior_var = torch.ones(self.weight.shape, device = device).mul(np.log(self.w_var_init))
+        self.b_prior_var = torch.ones(self.bias.shape, device = device).mul(np.log(self.b_var_init))
         self.weight_var = Parameter(torch.Tensor(self.weight.shape))
         self.bias_var = Parameter(torch.Tensor(self.bias.shape))
         
@@ -345,8 +365,8 @@ class MFConvLayer(torch.nn.modules.conv._ConvNd):
         self.bias.data = torch.empty_like(self.bias).uniform_(-bound, bound).data
 
     def get_kl(self, lamb):
-        W_kl = compute_kl(self.weight, self.weight_var, self.W_prior_mean, self.W_prior_var, lamb = lamb, initial_prior_var = self.prior_var)
-        b_kl = compute_kl(self.bias, self.bias_var, self.b_prior_mean, self.b_prior_var, lamb = lamb, initial_prior_var = self.prior_var)
+        W_kl = compute_kl(self.weight, self.weight_var, self.W_prior_mean, self.W_prior_var, lamb = lamb, initial_prior_var = self.w_var_init)
+        b_kl = compute_kl(self.bias, self.bias_var, self.b_prior_mean, self.b_prior_var, lamb = lamb, initial_prior_var = self.b_var_init)
 
         return W_kl + b_kl
 
@@ -357,11 +377,11 @@ class MFConvLayer(torch.nn.modules.conv._ConvNd):
         eps = torch.empty(output_mean.shape, device=device).normal_(mean=0,std=1)
         output = output_mean + torch.sqrt(output_var + 1e-9) * eps
 
-        return output
+        return output 
 
 
 class MFLinearLayer(nn.Module):
-    def __init__(self, dim_in, dim_out, prior_var = 1, init_var = -7):
+    def __init__(self, dim_in, dim_out, prior_var = -1, init_var = -7, ratio=0.5):
         super().__init__()
         self.init_var = init_var
         self.dim_in = dim_in
@@ -375,10 +395,28 @@ class MFLinearLayer(nn.Module):
         self.W_prior_mean = torch.zeros([dim_out, dim_in], device = device)
         self.b_prior_mean = torch.zeros([dim_out], device = device)
 
-        self.prior_var = prior_var
+
+        if prior_var == -1:
+            fan_in, _ = _calculate_fan_in_and_fan_out(self.W_mean)
+            gain = 1 # Var[w] + sigma^2 = 2/fan_in
+            
+            total_var = 2 / fan_in
+            noise_var = total_var * ratio
+            mu_var = total_var - noise_var
+            
+            noise_std, mu_std = math.sqrt(noise_var), math.sqrt(mu_var)
+            bound = math.sqrt(3.0) * mu_std
+            rho_init = np.log(np.exp(noise_std)-1)
+            bias_rho_init = np.log(np.exp(1) - 1)
+
+            self.w_var_init = np.log1p(np.exp(rho_init))**2
+            self.b_var_init = np.log1p(np.exp(bias_rho_init))**2
+        else :
+            self.w_var_init = prior_var
+            self.b_var_init = prior_var
         
-        self.W_prior_var = torch.ones([dim_out, dim_in], device = device).mul(np.log(self.prior_var))
-        self.b_prior_var = torch.ones([dim_out], device = device).mul(np.log(self.prior_var))
+        self.W_prior_var = torch.ones([dim_out, dim_in], device = device).mul(np.log(self.w_var_init))
+        self.b_prior_var = torch.ones([dim_out], device = device).mul(np.log(self.b_var_init))
 
         self.reset_parameters()
 
@@ -415,8 +453,8 @@ class MFLinearLayer(nn.Module):
             self.b_mean.data = torch.empty_like(self.b_mean).uniform_(-bound, bound).data
 
     def get_kl(self, lamb):
-        W_kl = compute_kl(self.W_mean, self.W_var, self.W_prior_mean, self.W_prior_var, lamb = lamb, initial_prior_var = self.prior_var)
-        b_kl = compute_kl(self.b_mean, self.b_var, self.b_prior_mean, self.b_prior_var, lamb = lamb, initial_prior_var = self.prior_var)
+        W_kl = compute_kl(self.W_mean, self.W_var, self.W_prior_mean, self.W_prior_var, lamb = lamb, initial_prior_var = self.w_var_init)
+        b_kl = compute_kl(self.b_mean, self.b_var, self.b_prior_mean, self.b_prior_var, lamb = lamb, initial_prior_var = self.b_var_init)
         return W_kl + b_kl
 
     def forward(self, x):
@@ -426,3 +464,24 @@ class MFLinearLayer(nn.Module):
 
         output = output_mean + (eps * output_std)
         return output
+
+
+
+def _calculate_fan_in_and_fan_out(tensor):
+    dimensions = tensor.dim()
+    if dimensions < 2:
+        raise ValueError("Fan in and fan out can not be computed for tensor with fewer than 2 dimensions")
+
+    if dimensions == 2:  # Linear
+        fan_in = tensor.size(1)
+        fan_out = tensor.size(0)
+    else:
+        num_input_fmaps = tensor.size(1)
+        num_output_fmaps = tensor.size(0)
+        receptive_field_size = 1
+        if tensor.dim() > 2:
+            receptive_field_size = tensor[0][0].numel()
+        fan_in = num_input_fmaps * receptive_field_size
+        fan_out = num_output_fmaps * receptive_field_size
+
+    return fan_in, fan_out

@@ -20,17 +20,17 @@ if args.single_head:
 
 
 if args.approach == 'gvclf':
-    log_name = '{}_{}_{}_woDr_{}_lr_{}_film_{}_batch_{}_epoch_{}_singlehead_{}'.format(args.experiment, args.approach,args.seed, 
-                                                                     args.wo_Dropout, args.lr, film, args.batch_size, args.nepochs, single_head)
+    log_name = '{}_{}_{}_woDr_{}_lr_{}_film_{}_batch_{}_epoch_{}_singlehead_{}_prior_var_{}'.format(args.experiment, args.approach,args.seed, 
+                                                                     args.wo_Dropout, args.lr, film, args.batch_size, args.nepochs, single_head, args.prior_var)
 
 
 elif args.approach == 'gvclf_vd':
-    log_name = '{}_{}_{}_KLcoeff_{}_KLweight_{}_samples_{}_conv_Dropout_{}_droptype_{}_dr_{}_lr_{}_film_{}_batch_{}_epoch_{}_singlehead_{}'.format(
+    log_name = '{}_{}_{}_KLcoeff_{}_KLweight_{}_samples_{}_conv_Dropout_{}_droptype_{}_dr_{}_lr_{}_film_{}_batch_{}_epoch_{}_singlehead_{}_prior_var_{}'.format(
                                                                 args.experiment, args.approach,args.seed,
                                                                 args.KL_coeff, args.KL_weight, 
                                                                 args.num_samples, args.conv_Dropout, args.drop_type, args.droprate,
                                                                 args.lr, film,
-                                                                args.batch_size, args.nepochs, single_head)
+                                                                args.batch_size, args.nepochs, single_head, args.prior_var)
 conv_experiment = [
     'split_cifar10',
     'split_cifar100',
@@ -258,7 +258,7 @@ if len(args.parameter) == 0:
     args.parameter = best_param
     print("using default hyperparams of {}".format(best_param))
 
-appr=approach.Appr(net,nepochs=args.nepochs,lr=args.lr,args=args)
+appr=approach.Appr(net,nepochs=args.nepochs,lr=args.lr,args=args, sbatch = args.batch_size)
 
 print(appr.criterion)
 utils.print_optimizer_config(appr.optimizer)
@@ -356,5 +356,24 @@ if hasattr(appr, 'logs'):
             pickle.dump(appr.logs, output, pickle.HIGHEST_PROTOCOL)
 
 ########################################################################################################################
+logger = logger(file_name=args.experiment + "-" + args.approach, resume=True, path='./result_data/csvdata/' + args.experiment + '/', data_format='csv')
+if 'vd' in args.approach:
+    logger.add(film = film,
+        KL_weight = args.KL_weight,
+        init_dr = args.droprate,
+        beta = float(args.parameter.split(',')[0]),
+        lamb = float(args.parameter.split(',')[1]),
+        avg_acc = avg_acc,
+        file_name = log_name
+        )
+else:
+    logger.add(
+        film = film,
+        beta = float(args.parameter.split(',')[0]),
+        lamb = float(args.parameter.split(',')[1]),
+        avg_acc = avg_acc,
+        file_name = log_name,
+        )
+logger.save()
 
 
