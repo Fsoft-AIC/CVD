@@ -77,6 +77,8 @@ class Appr(object):
                 num_epochs_to_train = int(round(self.nepochs * self.first_train_size/len(xtrain)))
         if t > 0 and self.equalize_epochs:
             num_epochs_to_train = int(round(self.nepochs * self.first_train_size/len(xtrain)))
+        else:
+            num_epochs_to_train = self.nepochs
 
         print('training for {} epochs'.format(num_epochs_to_train))
         
