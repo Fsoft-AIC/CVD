@@ -3,7 +3,7 @@ import argparse
 def get_args():
     parser=argparse.ArgumentParser(description='Continual')
     parser.add_argument('--seed',type=int,default=0,help='(default=%(default)d)')
-    parser.add_argument('--experiment',default='',type=str,required=True,choices=['mnist2','pmnist','cifar','mixture', 'easy-chasy', 'hard-chasy', 'smnist', 'split_mnist', 'split_cifar100', 'split_cifar10_100'],help='(default=%(default)s)')
+    parser.add_argument('--experiment',default='',type=str,required=True,choices=['mnist2','pmnist','cifar','mixture', 'easy-chasy', 'hard-chasy', 'smnist', 'split_mnist', 'split_cifar100', 'split_cifar10_100', 'omniglot', 'pmnist'],help='(default=%(default)s)')
     parser.add_argument('--approach',default='',type=str,required=True,choices=['random','sgd','sgd-frozen','lwf','lfl','ewc','imm-mean','progressive','pathnet',
                                                                                 'imm-mode','sgd-restart', 'ewc2', 'ewc-film',
                                                                                 'joint','hat','hat-test', 'gvcl', 'vcl', 'vclf', 'gvclf', 'gvclf_vd'],help='(default=%(default)s)')
@@ -26,6 +26,7 @@ def get_args():
     parser.add_argument('--KL_weight', type=float, default=1, help='Choose the KL weight of noise') 
     parser.add_argument('--test_samples', type=int, default=100, help='Number of sample at test time') 
     parser.add_argument('--prior_var',default=-1,type=int,required=False,help='(default=%(default)d)')
+    parser.add_argument('--equalize_epochs',type=bool,default=False,help='(default=%(default)s)')
 
     args=parser.parse_args()
 

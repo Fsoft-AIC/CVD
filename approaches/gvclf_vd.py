@@ -35,7 +35,7 @@ class Appr(object):
             self.beta= float(params[0])
             self.lamb= float(params[1])
             
-        self.equalize_epochs = True
+        self.equalize_epochs = args.equalize_epochs
         self.exp = args.experiment
 
         return
