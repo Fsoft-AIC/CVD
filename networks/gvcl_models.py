@@ -117,10 +117,7 @@ class MLPFilm:
     class Net(MultiHeadFiLMCNN):
         def __init__(self, inputsize,taskcla):
             heads = [t[1] for t in taskcla]
-            if not args.single_head:
-                super().__init__((1,28,28), [], [400,400], heads, [28*28, 400], film_type = 'point')
-            else:
-                super().__init__((1,28,28), [], [400,400], heads, [28*28, 400, 400], film_type = 'point')
+            super().__init__((1,28,28), [], [400,400], heads, film_type = 'point')
             if not args.wo_Dropout:
                 self.drop = torch.nn.Dropout(args.droprate_linear)
         
