@@ -3,7 +3,7 @@ import argparse
 def get_args():
     parser=argparse.ArgumentParser(description='Continual')
     parser.add_argument('--seed',type=int,default=0,help='(default=%(default)d)')
-    parser.add_argument('--experiment',default='',type=str,required=True,choices=['mnist2','pmnist','cifar','mixture', 'easy-chasy', 'hard-chasy', 'smnist', 'split_mnist', 'split_cifar100'],help='(default=%(default)s)')
+    parser.add_argument('--experiment',default='',type=str,required=True,choices=['mnist2','pmnist','cifar','mixture', 'easy-chasy', 'hard-chasy', 'smnist', 'split_mnist', 'split_cifar100', 'split_cifar10_100'],help='(default=%(default)s)')
     parser.add_argument('--approach',default='',type=str,required=True,choices=['random','sgd','sgd-frozen','lwf','lfl','ewc','imm-mean','progressive','pathnet',
                                                                                 'imm-mode','sgd-restart', 'ewc2', 'ewc-film',
                                                                                 'joint','hat','hat-test', 'gvcl', 'vcl', 'vclf', 'gvclf', 'gvclf_vd'],help='(default=%(default)s)')
