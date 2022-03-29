@@ -186,7 +186,7 @@ class Appr(object):
                 task_labels = int(t) * torch.ones_like(targets)
 
                 # Forward
-                outputs=self.model(images, task_labels, tasks = [t], num_samples = 20)
+                outputs=self.model(images, task_labels, tasks = [t], num_samples = num_samples)
                 output=outputs[t]
                 probs = F.softmax(output, dim=2).mean(dim = 0)
                 _,pred=probs.max(1)
