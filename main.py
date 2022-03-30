@@ -18,7 +18,7 @@ if args.single_head:
     single_head = 1
 best_param, best_lr, best_epochs = get_best_params(args.approach, args.experiment)
 if len(args.parameter) == 0:
-    params = best_param
+    params = best_param.split(',')
 elif len(args.parameter)>=1:
     params=args.parameter.split(',')
 beta= float(params[0])
