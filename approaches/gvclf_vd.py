@@ -98,7 +98,8 @@ class Appr(object):
             clock1=time.time()
 
             clock2=time.time()
-            print('| Epoch {:3d}, time={:5.1f}ms| Train: class_loss={:.3f}  kl_loss={:.3f}  dropout_loss={:.3f}  total_loss={:.3f}, acc={:5.1f}% |'.format(
+            if (e+1) % 10 == 0:
+                print('| Epoch {:3d}, time={:5.1f}ms| Train: class_loss={:.3f}  kl_loss={:.3f}  dropout_loss={:.3f}  total_loss={:.3f}, acc={:5.1f}% |'.format(
                 e+1,1000*self.sbatch*(clock1-clock0)/xtrain.size(0),class_loss, kl_loss, dropout_loss, total_loss,100*train_acc))
 
         self.valid = False

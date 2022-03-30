@@ -29,7 +29,7 @@ class MLPFilmVD:
         def __init__(self, inputsize,taskcla):
             heads = [t[1] for t in taskcla]
             if not args.single_head:
-                super().__init__((1,28,28), [], [400,400], heads, [28*28, 400], film_type = 'point')
+                super().__init__((1,28,28), [], [256,256], heads, [28*28, 256], film_type = 'point')
             else:
                 super().__init__((1,28,28), [], [400,400], heads, [28*28, 400, 400], film_type = 'point')
         
@@ -110,14 +110,18 @@ class CNNOmniglotFilmVD:
             return x
 
         def forward_linear(self, x, task_labels, num_samples=1, tasks = None):
-            x = self.fc_dropout_layers[0](x, task_labels, num_samples)
+            if not args.conv_Dropout:
+                x = self.fc_dropout_layers[0](x, task_labels, num_samples)
             return x
 
 class MLPFilm:
     class Net(MultiHeadFiLMCNN):
         def __init__(self, inputsize,taskcla):
             heads = [t[1] for t in taskcla]
-            super().__init__((1,28,28), [], [400,400], heads, film_type = 'point')
+            if not args.single_head:
+                super().__init__((1,28,28), [], [256,256], heads, film_type = 'point')
+            else:
+                super().__init__((1,28,28), [], [400,400], heads, film_type = 'point')
             if not args.wo_Dropout:
                 self.drop = torch.nn.Dropout(args.droprate_linear)
         
@@ -157,8 +161,6 @@ class CNNOmniglotFilm:
             return x
 
         def forward_linear(self, x, task_labels, num_samples=1, tasks = None):
-            if not args.wo_Dropout:
-                x = self.drop(x)
             return x
 
 class CNNFilm:

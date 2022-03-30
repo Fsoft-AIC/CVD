@@ -16,20 +16,28 @@ if args.film:
     film = 1
 if args.single_head:
     single_head = 1
-
+best_param, best_lr, best_epochs = get_best_params(args.approach, args.experiment)
+if len(args.parameter) == 0:
+    params = best_param
+elif len(args.parameter)>=1:
+    params=args.parameter.split(',')
+beta= float(params[0])
+lamb= float(params[1])
 
 
 if args.approach == 'gvclf':
-    log_name = '{}_{}_{}_woDr_{}_lr_{}_film_{}_batch_{}_epoch_{}_singlehead_{}_prior_var_{}'.format(args.experiment, args.approach,args.seed, 
-                                                                     args.wo_Dropout, args.lr, film, args.batch_size, args.nepochs, single_head, args.prior_var)
+    log_name = '{}_{}_{}_film_{}_beta_{}_lamb_{}_woDr_{}_lr_{}_batch_{}_epoch_{}_singlehead_{}_prior_var_{}'.format(args.experiment, args.approach,args.seed,
+                                                                    film, beta, lamb, 
+                                                                    args.wo_Dropout, args.lr, args.batch_size, args.nepochs, single_head, args.prior_var)
 
 
 elif args.approach == 'gvclf_vd':
-    log_name = '{}_{}_{}_KLcoeff_{}_KLweight_{}_samples_{}_conv_Dropout_{}_droptype_{}_dr_{}_lr_{}_film_{}_batch_{}_epoch_{}_singlehead_{}_prior_var_{}'.format(
-                                                                args.experiment, args.approach,args.seed,
-                                                                args.KL_coeff, args.KL_weight, 
-                                                                args.num_samples, args.conv_Dropout, args.drop_type, args.droprate,
-                                                                args.lr, film,
+    log_name = '{}_{}_{}_film_{}_KLweight_{}_dr_{}_beta_{}_lamb_{}_KLcoeff_{}_samples_{}_conv_Dropout_{}_droptype_{}_lr_{}_batch_{}_epoch_{}_singlehead_{}_prior_var_{}'.format(
+                                                                args.experiment, args.approach,args.seed, 
+                                                                film, args.KL_weight, args.droprate, beta, lamb,
+                                                                args.KL_coeff, 
+                                                                args.num_samples, args.conv_Dropout, args.drop_type,
+                                                                args.lr,
                                                                 args.batch_size, args.nepochs, single_head, args.prior_var)
 conv_experiment = [
     'split_cifar10',
@@ -247,7 +255,7 @@ net=network.Net(inputsize,taskcla).cuda()
 utils.print_model_report(net)
 
 #Set hyperparameters
-best_param, best_lr, best_epochs = get_best_params(args.approach, args.experiment)
+#best_param, best_lr, best_epochs = get_best_params(args.approach, args.experiment)
 if args.nepochs == -1:
     args.nepochs = best_epochs
     print("using default # epochs of {}".format(best_epochs))
@@ -358,19 +366,22 @@ if hasattr(appr, 'logs'):
 ########################################################################################################################
 logger = logger(file_name=args.experiment + "-" + args.approach, resume=True, path='./result_data/csvdata/' + args.experiment + '/', data_format='csv')
 if 'vd' in args.approach:
-    logger.add(film = film,
+    logger.add(
+        seed = args.seed,
+        film = film,
         KL_weight = args.KL_weight,
         init_dr = args.droprate,
-        beta = float(args.parameter.split(',')[0]),
-        lamb = float(args.parameter.split(',')[1]),
+        beta = beta,
+        lamb = lamb,
         avg_acc = avg_acc,
         file_name = log_name
         )
 else:
     logger.add(
+        seed = args.seed,
         film = film,
-        beta = float(args.parameter.split(',')[0]),
-        lamb = float(args.parameter.split(',')[1]),
+        beta = beta,
+        lamb = lamb,
         avg_acc = avg_acc,
         file_name = log_name,
         )
