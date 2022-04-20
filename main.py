@@ -32,11 +32,11 @@ if args.approach == 'gvclf':
 
 
 elif args.approach == 'gvclf_vd':
-    log_name = '{}_{}_{}_film_{}_KLweight_{}_dr_{}_beta_{}_lamb_{}_KLcoeff_{}_samples_{}_conv_Dropout_{}_droptype_{}_lr_{}_batch_{}_epoch_{}_singlehead_{}_prior_var_{}'.format(
+    log_name = '{}_{}_{}_film_{}_KLweight_{}_dr_{}_beta_{}_lamb_{}_KLcoeff_{}_samples_{}_conv_Dropout_{}_droptype_{}_drop_prior_{}_film_type_{}_lr_{}_batch_{}_epoch_{}_singlehead_{}_prior_var_{}'.format(
                                                                 args.experiment, args.approach,args.seed, 
                                                                 film, args.KL_weight, args.droprate, beta, lamb,
                                                                 args.KL_coeff, 
-                                                                args.num_samples, args.conv_Dropout, args.drop_type,
+                                                                args.num_samples, args.conv_Dropout, args.drop_type, args.drop_prior, args.film_type,
                                                                 args.lr,
                                                                 args.batch_size, args.nepochs, single_head, args.prior_var)
 conv_experiment = [
@@ -238,7 +238,7 @@ elif 'smnist' == args.experiment or 'split_mnist' == args.experiment:
 elif args.experiment == 'omniglot':
     if 'gvclf' == args.approach:
         from networks.gvcl_models import CNNOmniglotFilm as network
-    elif 'gvclf_vd' in args.approach:
+    elif 'gvclf_vd' == args.approach:
         from networks.gvcl_models import CNNOmniglotFilmVD as network
 ########################################################################################################################
 

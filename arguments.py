@@ -27,6 +27,8 @@ def get_args():
     parser.add_argument('--test_samples', type=int, default=20, help='Number of sample at test time') 
     parser.add_argument('--prior_var',default=-1,type=int,required=False,help='(default=%(default)d)')
     parser.add_argument('--equalize_epochs',type=bool,default=False,help='(default=%(default)s)')
+    parser.add_argument('--drop_prior', type=str, default='log_uniform', choices= ['gauss', 'log_uniform'], help='Choose prior of dropout')
+    parser.add_argument('--film_type', type=str, default='point', choices= ['point', 'scale', 'bias', 'none'], help='Choose film type')
 
     args=parser.parse_args()
 

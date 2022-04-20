@@ -88,7 +88,7 @@ class CNNOmniglotFilmVD:
         def __init__(self, inputsize,taskcla):
             heads = [t[1] for t in taskcla]
             super().__init__((1,28,28), [(64, 3, 0), (64, 3, 0), 'pool', (64, 3, 0), (64, 3, 0), 'pool'], [], heads, 
-                                        [1024], film_type = 'point')
+                                        [], film_type = 'point')
             if not args.conv_Dropout:     
                 self.drop = nn.Dropout(args.droprate_linear)
 
@@ -110,8 +110,6 @@ class CNNOmniglotFilmVD:
             return x
 
         def forward_linear(self, x, task_labels, num_samples=1, tasks = None):
-            if not args.conv_Dropout:
-                x = self.fc_dropout_layers[0](x, task_labels, num_samples)
             return x
 
 class MLPFilm:
@@ -195,6 +193,3 @@ class CNNFilm:
                 if not args.wo_Dropout:
                     x = self.drop2(x)
             return x
-
-
-

@@ -205,4 +205,3 @@ class Appr(object):
     
     def ce_crit(self, t, output, targets):
         return 0
-

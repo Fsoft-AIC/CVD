@@ -27,12 +27,13 @@ from arguments import get_args
 device = 'cuda:0'
 
 args = get_args()
-if args.drop_type == 'Gauss':
+
+if args.drop_prior == 'gauss':
     from dropout.Gauss_dropout import GaussDropoutConv2d 
     from dropout.Gauss_dropout import GaussDropout 
-elif args.drop_type == 'AddNoise':
-    from dropout.AddNoise import Conv2DAddNoise 
-    from dropout.AddNoise import LinearAddNoise 
+elif args.drop_prior == 'log_uniform':
+    from dropout.LUGauss_dropout import GaussDropoutConv2d 
+    from dropout.LUGauss_dropout import GaussDropout 
 
 class MultiHeadFiLMCNN(nn.Module):
     def __init__(self, input_shape, conv_sizes, fc_sizes, output_dims, film_type = 'point', global_avg_pool = False, prior_var = -1, init_vars = []):
@@ -48,9 +49,9 @@ class MultiHeadFiLMCNN(nn.Module):
         self.pool_indices = []        
         
         if args.film:
-            self.film_type = film_type
+            self.film_type = args.film_type
             self.set_film_gen_type()
-            print(self.film_type)
+            print("Film type:", self.film_type)
             self.conv_film_layers = nn.ModuleList([self.conv_film_gen_type(self.num_tasks, conv_size[0]) for conv_size in conv_sizes if conv_size != 'pool'])
             self.fc_film_layers = nn.ModuleList([self.fc_film_gen_type(self.num_tasks, fc_size) for fc_size in fc_sizes])
 
@@ -207,6 +208,7 @@ class MultiHeadFiLMCNNVD(MultiHeadFiLMCNN):
         super().__init__(input_shape, conv_sizes, fc_sizes, output_dims, film_type, global_avg_pool, prior_var, init_vars)
 
         self.set_dropout_gen_type()
+        print("Drop prior:", args.drop_prior)
         if args.conv_Dropout:
             self.conv_dropout_layers = nn.ModuleList()
             s = input_shape[-1]
