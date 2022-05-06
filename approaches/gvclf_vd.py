@@ -90,6 +90,7 @@ class Appr(object):
         elif args.KL_coeff == 'M_N':
             self.KL_coeff = self.sbatch/datasize
 
+
         # Loop epochs
         for e in range(num_epochs_to_train):
             # Train
@@ -101,6 +102,8 @@ class Appr(object):
             if (e+1) % 10 == 0:
                 print('| Epoch {:3d}, time={:5.1f}ms| Train: class_loss={:.3f}  kl_loss={:.3f}  dropout_loss={:.3f}  total_loss={:.3f}, acc={:5.1f}% |'.format(
                 e+1,1000*self.sbatch*(clock1-clock0)/xtrain.size(0),class_loss, kl_loss, dropout_loss, total_loss,100*train_acc))
+        # print("drop_muy:", self.model.fc_dropout_layers[0].muy.data)
+        # print("drop_var:", self.model.fc_dropout_layers[0].log_alpha.data)
 
         self.valid = False
         return

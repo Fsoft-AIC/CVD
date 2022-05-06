@@ -97,4 +97,4 @@ def get(seed=0, fixed_order=False, pc_valid=0, tasknum = 50):
         
     data['ncla'] = n
     print(n)
-    return data, taskcla, size
+    return data, taskcla, 

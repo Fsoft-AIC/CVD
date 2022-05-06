@@ -134,4 +134,4 @@ class GaussDropoutConv2d(nn.Module):
         kl = -negative_kl
 
         
-        return kl.sum() 
+        return kl.sum()

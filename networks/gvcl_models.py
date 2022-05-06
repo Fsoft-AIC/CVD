@@ -29,19 +29,20 @@ class MLPFilmVD:
         def __init__(self, inputsize,taskcla):
             heads = [t[1] for t in taskcla]
             if not args.single_head:
-                super().__init__((1,28,28), [], [256,256], heads, [28*28, 256], film_type = 'point')
+                super().__init__((1,28,28), [], [256,256], heads, [256, 256], film_type = 'point')
             else:
-                super().__init__((1,28,28), [], [400,400], heads, [28*28, 400, 400], film_type = 'point')
+                super().__init__((1,28,28), [], [400,400], heads, [400, 400], film_type = 'point')
         
         def forward_linear(self, x, task_labels, num_samples=1, tasks = None):
             for i, layer in enumerate(self.fc_layers):
-                x = self.fc_dropout_layers[i](x, task_labels, num_samples)
+                # x = self.fc_dropout_layers[i](x, task_labels, num_samples)
                 x = layer(x)
                 if args.film:
                     x = self.fc_film_layers[i](x, task_labels, num_samples)
+                x = self.fc_dropout_layers[i](x, task_labels, num_samples)
                 x = F.relu(x)
-            if args.single_head:
-                x = self.fc_dropout_layers[-1](x, task_labels, num_samples)
+            # if args.single_head:
+            #     x = self.fc_dropout_layers[-1](x, task_labels, num_samples)
             return x
 
         def forward_conv(self, x, task_labels, num_samples=1, tasks = None):
@@ -63,15 +64,20 @@ class CNNFilmVD:
                 x = conv_layer(x)
                 if args.film:
                     x = self.conv_film_layers[i](x, task_labels, num_samples)
+                if args.conv_Dropout:
+                    x = self.conv_dropout_layers[drop_index](x, task_labels, num_samples)
+                else:
+                    x = self.drop(x)
+                drop_index += 1
                 
                 x = F.relu(x)
                 if i in self.pool_indices:
                     x = F.max_pool2d(x, kernel_size = 2, stride = 2)
-                    if args.conv_Dropout:
-                        x = self.conv_dropout_layers[drop_index](x, task_labels, num_samples)
-                    else:
-                        x = self.drop(x)
-                    drop_index += 1
+                    # if args.conv_Dropout:
+                    #     x = self.conv_dropout_layers[drop_index](x, task_labels, num_samples)
+                    # else:
+                    #     x = self.drop(x)
+                    # drop_index += 1
             return x
 
         def forward_linear(self, x, task_labels, num_samples=1, tasks = None):
@@ -79,8 +85,9 @@ class CNNFilmVD:
                 x = layer(x)
                 if args.film:
                     x = self.fc_film_layers[i](x, task_labels, num_samples)
-                x = F.relu(x)
                 x = self.fc_dropout_layers[i](x, task_labels, num_samples)
+                x = F.relu(x)
+                # x = self.fc_dropout_layers[i](x, task_labels, num_samples)
             return x
 
 class CNNOmniglotFilmVD:
@@ -88,7 +95,7 @@ class CNNOmniglotFilmVD:
         def __init__(self, inputsize,taskcla):
             heads = [t[1] for t in taskcla]
             super().__init__((1,28,28), [(64, 3, 0), (64, 3, 0), 'pool', (64, 3, 0), (64, 3, 0), 'pool'], [], heads, 
-                                        [], film_type = 'point')
+                                        [1024], film_type = 'point')
             if not args.conv_Dropout:     
                 self.drop = nn.Dropout(args.droprate_linear)
 
@@ -110,6 +117,8 @@ class CNNOmniglotFilmVD:
             return x
 
         def forward_linear(self, x, task_labels, num_samples=1, tasks = None):
+            if not args.conv_Dropout:
+                x = self.fc_dropout_layers[0](x, task_labels, num_samples)
             return x
 
 class MLPFilm:

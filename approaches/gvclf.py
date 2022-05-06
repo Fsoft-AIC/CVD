@@ -81,7 +81,7 @@ class Appr(object):
             num_epochs_to_train = self.nepochs
 
         print('training for {} epochs'.format(num_epochs_to_train))
-        
+        print("Be4 train var:", self.model.fc_layers[0].W_var.data)
         # Loop epochs
         for e in range(num_epochs_to_train):
             # Train
@@ -90,9 +90,10 @@ class Appr(object):
             clock1=time.time()
 
             clock2=time.time()
-            if (e+1) % 10 == 0:
+            if (e+1) % 1 == 0:
                 print('| Epoch {:3d}, time={:5.1f}ms| Train: class_loss={:.3f}  kl_loss={:.3f}  total_loss={:.3f}, acc={:5.1f}% |'.format(
                 e+1,1000*self.sbatch*(clock1-clock0)/xtrain.size(0),class_loss, kl_loss, total_loss,100*train_acc))
+        print("After train var:", self.model.fc_layers[0].W_var.data)
         return
 
     def train_epoch(self,t,x,y):

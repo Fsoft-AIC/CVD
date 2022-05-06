@@ -28,7 +28,7 @@ class GaussDropout(nn.Module):
         self.input_size = input_size
         self.muy = nn.Parameter(torch.Tensor(tasks, self.input_size))
 
-        self.var_init = 1e-1
+        self.var_init = p
         self.prior_mean = torch.ones([1, input_size], device = device)
         self.prior_var = torch.ones([1, input_size], device = device).mul(np.log(self.var_init))
 
@@ -91,7 +91,7 @@ class GaussDropoutConv2d(nn.Module):
         self.log_alpha = nn.Parameter(torch.Tensor(tasks, in_channels * self.size * self.size))
         
         self.muy = nn.Parameter(torch.Tensor(tasks, in_channels * self.size * self.size))
-        self.var_init = 1e-1
+        self.var_init = p
         self.prior_mean = torch.ones([1, in_channels * self.size * self.size], device = device)
         self.prior_var = torch.ones([1, in_channels * self.size * self.size], device = device).mul(np.log(self.var_init))
 
@@ -137,5 +137,3 @@ class GaussDropoutConv2d(nn.Module):
             return 0.5 * torch.sum(trace_term  + det_term + mean_term - 1)
         else:
             return 0.5 * (trace_term + mean_term + det_term - 1) 
-
-        

@@ -215,11 +215,14 @@ class MultiHeadFiLMCNNVD(MultiHeadFiLMCNN):
             prev_channel = input_shape[0]
             for i, layer_params in enumerate(conv_sizes):
                 if layer_params != 'pool':
+                    #self.conv_dropout_layers.append(self.conv_dropout_gen_type(self.num_tasks, prev_channel, s))
                     s = compute_conv_output_size(s, kernel_size=layer_params[1], padding=layer_params[2])
                     prev_channel = layer_params[0]
+                    self.conv_dropout_layers.append(self.conv_dropout_gen_type(self.num_tasks, prev_channel, s))
+
                 else:
                     s = s//2
-                    self.conv_dropout_layers.append(self.conv_dropout_gen_type(self.num_tasks, prev_channel, s))
+                    #self.conv_dropout_layers.append(self.conv_dropout_gen_type(self.num_tasks, prev_channel, s))
         self.fc_dropout_layers = nn.ModuleList([self.fc_dropout_gen_type(self.num_tasks, drop_fc_size) for drop_fc_size in drop_fc_sizes])
 
     def set_dropout_gen_type(self):

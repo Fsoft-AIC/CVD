@@ -386,5 +386,3 @@ else:
         file_name = log_name,
         )
 logger.save()
-
-
