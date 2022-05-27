@@ -170,8 +170,8 @@ class CNNFilm:
             super().__init__((3,32,32), [(32, 3, 1), (32, 3, 1), 'pool', (64, 3, 1), (64, 3, 1), 'pool', (128, 3, 1), (128, 3, 1), 'pool'], [256], heads, 
                                         film_type = 'point')
             if not args.wo_Dropout:
-                self.drop1 = nn.Dropout(0.25)
-                self.drop2 = nn.Dropout(0.5)
+                self.drop1 = nn.Dropout(args.droprate)
+                self.drop2 = nn.Dropout(args.droprate_linear)
 
         def forward_conv(self, x, task_labels, num_samples=1, tasks = None):
             for i, conv_layer in enumerate(self.conv_layers):
