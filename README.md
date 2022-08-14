@@ -1,4 +1,4 @@
-# gvclf_vd
+# Continual Variational Dropout
 
 #### To run CVD on split-mnist, enter the following command:
 
