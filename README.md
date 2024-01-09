@@ -1,5 +1,5 @@
 # Continual Variational Dropout
-This [repository](https://github.com/nguyenvuthientrang/CVD) contains all of our code for Continual Variational Dropout: A View of Auxiliary Local Variables in Continual Learning.
+This repository contains all of our code for Continual Variational Dropout: A View of Auxiliary Local Variables in Continual Learning.
 
 ## Dataset
 
