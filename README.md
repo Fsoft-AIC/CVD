@@ -23,3 +23,15 @@ $ python3 main.py --experiment split_cifar100 --approach gvclf_vd --film --KL_we
 
 ## Acknowledgement
 Our implementation is based on [yolky/gvcl](https://github.com/yolky/gvcl).
+
+## Citation
+```bibtex
+@article{hainam2023continual,
+  title={Continual variational dropout: a view of auxiliary local variables in continual learning},
+  author={Hai, Nam Le and Nguyen, Trang and Van, Linh Ngo and Nguyen, Thien Huu and Than, Khoat},
+  journal={Machine Learning},
+  pages={1--43},
+  year={2023},
+  publisher={Springer}
+}
+```
